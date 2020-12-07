@@ -2,24 +2,26 @@ from Graph import Graph
 from random import randint, uniform
 
 class GraphColouring:
-    def __init__(self, path, pc, pm, n):
+    def __init__(self, path, pc, pm, n, chi):
         self.N = n
         self.pm = pm
         self.pc = pc 
-        self.graph = Graph(path)
+        self.graph = Graph(path, chi)
         self.population = [self.randomColors() for i in range(self.N)]
-        self.generation = 0
+        self.offspring = []
+        self.generation = -1
         self.probs = []
         self.expected = []
+        self.colouring = []
     
     def randomColors(self):
         res = []
         for i in range(self.graph.numVertices):
-            res.append(randint(1,self.graph.chi))
+            res.append(randint(0,self.graph.chi-1))
         return res
 
-    def selectByFitness(self):
-        # Em caso de empate, pega o primeiro
+    def getPopulationFitness(self):
+
         fitness = []
         for seq in self.population:
             fitness.append(self.graph.fitnessEvaluation(seq))
@@ -35,39 +37,92 @@ class GraphColouring:
         
         return (b1, b2, w)
 
-    def SPCGX(self, b1, b2):
-        res1, res2 = self.graph.conflictingEdges(self.population[b1], self.population[b2])
-        print('Seq1 = {}\nSeq2 = {}'.format(res1, res2))
+    def SPCGX(self):
+        res1, res2 = self.graph.conflictingEdges(self.offspring[0], self.offspring[1])
+
+        for edge in res1:
+            self.offspring[0][edge[1]] = (self.offspring[0][edge[1]] + 1) % self.graph.chi
+
+        for edge in res2:
+            self.offspring[1][edge[1]] = (self.offspring[1][edge[1]] + 1) % self.graph.chi
+
+    
+    def mutation(self):
+        res1, res2 = self.graph.conflictingEdges(self.offspring[0], self.offspring[1])
+
+        for edge in res1:
+            if self.offspring[0][edge[0]] == 0:
+                self.offspring[0][edge[0]] = self.graph.chi - 1
+            else:
+                self.offspring[0][edge[0]] -= 1
+
+        for edge in res2:
+            if self.offspring[1][edge[0]] == 0:
+                self.offspring[1][edge[0]] = self.graph.chi - 1
+            else:
+                self.offspring[1][edge[0]] -= 1
+
+
+    def updateWorst(self, w):
+        f1 = self.graph.getNumColors(self.offspring[0])
+        f2 = self.graph.getNumColors(self.offspring[1])
+        fworst = self.graph.getNumColors(self.population[w])
+
+        if f1 < fworst:
+            self.population[w] = self.offspring[0]
+
+        if f2 < f1:
+            self.population[w] = self.offspring[1]
+        
+
+    def isOptimalReached(self):
+        res1, res2 = self.graph.conflictingEdges(self.offspring[0], self.offspring[1])
+
+        if res1 == []:
+            self.colouring = self.offspring[0]
+            return True
+        if res2 == []:
+            self.colouring = self.offspring[1]
+            return True
+
+        return False
+        
         
 
 
-
     def run(self):
-        print('População: ', self.population)
-        # Fitness evaluation and selection of two better genes and worst gene sequences
-        fitness = self.selectByFitness()
-        self.probs = [i/sum(fitness) for i in fitness]
-        self.expected = [i*self.N for i in fitness]
-        b1, b2, w = self.selectSeq()
-        print('melhores: {} e {}'.format(b1,b2))
+        flag = True
+        try:
+            while True:
+                if self.generation >= 1000:
+                    flag = False
+                    break
+                self.generation += 1
+                # Fitness evaluation and selection of two better genes and worst gene sequences
+                fitness = self.getPopulationFitness()
+                self.probs = [i/sum(fitness) for i in fitness]
+                self.expected = [i*self.N for i in fitness]
+                b1, b2, w = self.selectSeq()
+                self.offspring = [self.population[b1], self.population[b2]]
 
-        pcr = uniform(0,1)
-        if pcr > self.pc:
-            # Applying SPCGX to b1 and b2
-            self.SPCGX(b1, b2)
+                pcr = uniform(0,1)
+                if pcr > self.pc:
+                    self.SPCGX()
+
+                pmr = uniform(0,1)
+                if pmr > self.pm:
+                    self.mutation()
+                
+                self.updateWorst(w)
+                if self.isOptimalReached():
+                    break
+        except:
+            flag = False
+        if flag:
+            print(self.generation)
+        else: 
+            print('Unsuccessful run')
 
 
 
-
-
-
-
-
-
-
-g =GraphColouring(path = 'in_graph',
-                  pc = 0.6,
-                  pm = 0.2,
-                  n = 5)
-g.run()
 

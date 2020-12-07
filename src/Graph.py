@@ -1,30 +1,21 @@
 class Graph:
-    def __init__(self, path):
+    def __init__(self, path, chi):
         self.vertices = []
-        self.colors = []
         self.edges = []
-        self.chi = -1
+        self.chi = chi
         f = open(path, 'r')
         for index, line in enumerate(f):
             if index == 0:
                 self.vertices = line.strip().split(' ')
                 self.vertices = [int(i) for i in self.vertices]
-                    
-            elif index == 1:
-                self.chi = int(line.strip())
             else:
                 edge = line.strip().split(' ')
                 self.edges.append((int(edge[0]), int(edge[1])))
 
         f.close()
 
-        self.colors = [-1 for i in self.vertices]
         self.numVertices = len(self.vertices)
 
-
-    def setColor(self, vertex, color):
-        i = self.vertices.index(vertex)
-        self.colors[i] = color
 
     def conflictingEdges(self, seq1, seq2):
         confEdgesSeq1 = []

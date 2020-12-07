@@ -87,8 +87,6 @@ class GraphColouring:
 
         return False
         
-        
-
 
     def run(self):
         flag = True
@@ -119,7 +117,7 @@ class GraphColouring:
         except:
             flag = False
         if flag:
-            print(self.generation)
+            print('\nColoração: {}\nGeração: {}\n'.format(self.colouring, self.generation))
         else: 
             print('Unsuccessful run')
 

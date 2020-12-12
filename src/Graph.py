@@ -17,7 +17,7 @@ class Graph:
         self.numVertices = len(self.vertices)
 
 
-    def conflictingEdges(self, seq1, seq2):
+    def conflictingEdges(self, seq1, seq2 = None):
         confEdgesSeq1 = []
         for i, c1 in enumerate(seq1):
             for j, c2 in enumerate(seq1):
@@ -27,12 +27,13 @@ class Graph:
                             confEdgesSeq1.append((i,j))
 
         confEdgesSeq2 = []
-        for i, c1 in enumerate(seq2):
-            for j, c2 in enumerate(seq2):
-                if c1 == c2:
-                    if (i, j) in self.edges or (j, i) in self.edges:
-                        if (j, i) not in confEdgesSeq2:
-                            confEdgesSeq2.append((i,j))
+        if seq2 != None:
+            for i, c1 in enumerate(seq2):
+                for j, c2 in enumerate(seq2):
+                    if c1 == c2:
+                        if (i, j) in self.edges or (j, i) in self.edges:
+                            if (j, i) not in confEdgesSeq2:
+                                confEdgesSeq2.append((i,j))
 
         return (confEdgesSeq1, confEdgesSeq2)
 

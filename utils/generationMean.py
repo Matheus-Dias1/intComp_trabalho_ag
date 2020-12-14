@@ -13,6 +13,6 @@ for line in f:
         r += 1
 
 print('generation mean', l/c)
-print('sucess rate', 1-r/c)
+print('sucess rate: {}%'.format(c/(r+c)*100) )
 
 
